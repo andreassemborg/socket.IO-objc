@@ -58,14 +58,14 @@
 
 @implementation SocketIO
 
-@synthesize isConnected = _isConnected, isConnecting = _isConnecting;
+@synthesize isConnected = _isConnected, isConnecting = _isConnecting, delegate = _delegate;
 
 - (id) initWithDelegate:(id<SocketIODelegate>)delegate
 {
     self = [super init];
     if (self)
     {
-        _delegate = delegate;
+        self.delegate = delegate;
         
         _queue = [[NSMutableArray alloc] init];
         
@@ -262,9 +262,9 @@
         [self log:[NSString stringWithFormat:@"send() >>> %@", req]];
         [_webSocket send:req];
         
-        if ([_delegate respondsToSelector:@selector(socketIO:didSendMessage:)])
+        if ([self.delegate respondsToSelector:@selector(socketIO:didSendMessage:)])
         {
-            [_delegate socketIO:self didSendMessage:packet];
+            [self.delegate socketIO:self didSendMessage:packet];
         }
     }
 }
@@ -332,9 +332,9 @@
                 [self log:@"json"];
                 if (packet.data && ![packet.data isEqualToString:@""])
                 {
-                    if ([_delegate respondsToSelector:@selector(socketIO:didReceiveJSON:)]) 
+                    if ([self.delegate respondsToSelector:@selector(socketIO:didReceiveJSON:)]) 
                     {
-                        [_delegate socketIO:self didReceiveJSON:packet];
+                        [self.delegate socketIO:self didReceiveJSON:packet];
                     }
                 }
                 break;
@@ -346,9 +346,9 @@
                     NSDictionary *json = [packet dataAsJSON];
                     packet.name = [json objectForKey:@"name"];
                     packet.args = [json objectForKey:@"args"];
-                    if ([_delegate respondsToSelector:@selector(socketIO:didReceiveEvent:)]) 
+                    if ([self.delegate respondsToSelector:@selector(socketIO:didReceiveEvent:)]) 
                     {
-                        [_delegate socketIO:self didReceiveEvent:packet];
+                        [self.delegate socketIO:self didReceiveEvent:packet];
                     }
                 }
                 break;
@@ -440,9 +440,9 @@
     
     _isConnecting = NO;
     
-    if ([_delegate respondsToSelector:@selector(socketIODidConnect:)]) 
+    if ([self.delegate respondsToSelector:@selector(socketIODidConnect:)]) 
     {
-        [_delegate socketIODidConnect:self];
+        [self.delegate socketIODidConnect:self];
     }
     
     // send any queued packets
@@ -473,9 +473,9 @@
         [_webSocket close];
     }
     
-    if (wasConnected && [_delegate respondsToSelector:@selector(socketIODidDisconnect:)]) 
+    if (wasConnected && [self.delegate respondsToSelector:@selector(socketIODidDisconnect:)]) 
     {
-        [_delegate socketIODidDisconnect:self];
+        [self.delegate socketIODidDisconnect:self];
     }
 }
 
@@ -559,9 +559,9 @@
     _isConnected = NO;
     _isConnecting = NO;
     
-    if ([_delegate respondsToSelector:@selector(socketIOHandshakeFailed:)])
+    if ([self.delegate respondsToSelector:@selector(socketIOHandshakeFailed:)])
     {
-        [_delegate socketIOHandshakeFailed:self];
+        [self.delegate socketIOHandshakeFailed:self];
     }
 }
 
